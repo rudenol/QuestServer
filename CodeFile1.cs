@@ -144,7 +144,7 @@ namespace hw2_3
             questions.Add(q);
         }
 
-        virtual public void DeliteQ(FilterDelegate del)
+        virtual public void DeliteQ(FilterDelegate del, string term)
         {
             questions.RemoveAll(q => del(q));
         }
@@ -156,9 +156,9 @@ namespace hw2_3
 
         public virtual void LoadFromFile(string filename)
         {
+            questions.Clear();
             using (StreamReader reader = new StreamReader(filename))
             {
-                //int level = 0;
                 while (!reader.EndOfStream)
                 {
                     string line = reader.ReadLine();
@@ -177,18 +177,47 @@ namespace hw2_3
             return s;
         }
 
-        public int Length => questions.Count;
+        public virtual int Length => questions.Count;
 
-        public Questions this[int i] => i >= 0 && i < Length ? questions[i] : null;
+        public virtual Questions this[int i] => i >= 0 && i < Length ? questions[i] : null;
 
         public IEnumerator GetEnumerator()
         {
             return questions.GetEnumerator();
         }
+
+        public virtual QuestionView GetQuestionView(int index)
+        {
+            Questions q = this[index];
+
+            if (q is TMultiQuestion mq)
+                return new QuestionView
+                {
+                    Text = mq.OutputQ(),
+                    IsMulti = true,
+                    Answers = mq.Answers
+                };
+
+            return new QuestionView
+            {
+                Text = q.OutputQ(),
+                IsMulti = false,
+                Answers = null
+            };
+        }
+        public virtual bool CheckAnswer(int index, string answer)
+        {
+            return questions[index].CheckA(answer);
+        }
     }
 
-    //это класс-наследник квеста, который используется, когда мы выбираем работу с сервером
-    //в нём переопределяются нужные методы с отправкой message
+    public class QuestionView
+    {
+        public string Text;
+        public bool IsMulti;
+        public string[] Answers;
+    }
+
     class ClientQuest : Quest
     {
         protected Socket client;
@@ -197,6 +226,64 @@ namespace hw2_3
             client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             IPEndPoint serverEndPoint = new IPEndPoint(IPAddress.Parse(_address), _port);
             client.Connect(serverEndPoint);
+        }
+
+        public override QuestionView GetQuestionView(int index)
+        {
+            string msg = "<GetQuestion>" + index;
+            client.Send(Encoding.Unicode.GetBytes(msg));
+
+            byte[] buf = new byte[8192];
+            int len = client.Receive(buf);
+
+            string data = Encoding.Unicode.GetString(buf, 0, len);
+            return ParseQuestionView(data);
+        }
+        private QuestionView ParseQuestionView(string data)
+        {
+            string[] parts = data.Split('|');
+
+            return new QuestionView
+            {
+                IsMulti = parts[0] == "M",
+                Text = parts[1],
+                Answers = parts.Length > 2 && parts[2] != ""
+                    ? parts[2].Split(';')
+                    : null
+            };
+        }
+
+        public override int Length
+        {
+            get
+            {
+                string message = "<Length>";
+                client.Send(Encoding.Unicode.GetBytes(message));
+
+                byte[] buffer = new byte[1024];
+                int n = client.Receive(buffer);
+
+                return int.Parse(Encoding.Unicode.GetString(buffer, 0, n));
+            }
+        }
+
+        public override Questions this[int i]
+        {
+            get
+            {
+                string message = "<GetStringQuest>" + i;
+                client.Send(Encoding.Unicode.GetBytes(message));
+
+                byte[] buffer = new byte[4096];
+                int n = client.Receive(buffer);
+                string data = Encoding.Unicode.GetString(buffer, 0, n);
+
+                if (TQuestion.TryParse(data, out var q) ||
+                    TMultiQuestion.TryParse(data, out q))
+                    return q;
+
+                return null;
+            }
         }
 
         override public void LoadFromFile(string filestring)
@@ -221,9 +308,9 @@ namespace hw2_3
             string data = Encoding.Unicode.GetString(bytes, 0, bytesRec);
         }
 
-        override public void DeliteQ(FilterDelegate del)
+        override public void DeliteQ(FilterDelegate del, string term)
         {
-            string message = "<DeliteQuestion>";
+            string message = "<DeliteQuestion>" + term;
             byte[] msg = Encoding.Unicode.GetBytes(message);
             client.Send(msg);
 
@@ -232,9 +319,7 @@ namespace hw2_3
             string data = Encoding.Unicode.GetString(bytes, 0, bytesRec);
         }
 
-        //классы ниже переопределить не получается, потому что методы не в квесте, они не найдены.
-        //как тогда с ними работать?
-        override public string OutputQ()
+        public string OutputQ()
         {
             string message = "<OutputQuestion>";
             byte[] msg = Encoding.Unicode.GetBytes(message);
@@ -246,16 +331,15 @@ namespace hw2_3
             return data;
         }
 
-        override public bool CheckA()
+        public override bool CheckAnswer(int index, string answer)
         {
-            string message = "<CheckAnswer>";
-            byte[] msg = Encoding.Unicode.GetBytes(message);
-            client.Send(msg);
+            string message = "<CheckAnswer>" + index + "|" + answer;
+            client.Send(Encoding.Unicode.GetBytes(message));
 
-            byte[] bytes = new byte[10240];
-            int bytesRec = client.Receive(bytes);
-            bool data = Convert.ToBoolean(Encoding.Unicode.GetString(bytes, 0, bytesRec));
-            return data;
+            byte[] buf = new byte[1024];
+            int len = client.Receive(buf);
+
+            return bool.Parse(Encoding.Unicode.GetString(buf, 0, len));
         }
     }
 }

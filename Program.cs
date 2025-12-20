@@ -22,12 +22,12 @@ namespace QuestServer
             {
                 server.Bind(localEndPoint);
                 server.Listen(10);
-                Console.WriteLine("Сервер запущеню Ожидание подключений...");
+                Console.WriteLine("Сервер запущен. Ожидание подключений...");
 
                 while (true)
                 {
                     Socket handler = server.Accept();
-                    Console.WriteLine($"Клиент подключился: {server.RemoteEndPoint}");
+                    Console.WriteLine($"Клиент подключился: {handler.RemoteEndPoint}");
 
                     Thread clientTread = new Thread(delegate () { HandlerClient(handler); });
                     clientTread.Start();
@@ -58,36 +58,79 @@ namespace QuestServer
 
                     byte[] msg;
 
-                    //здесь должны приниматься сообщения, вызываться методы, и что-то должно отправляться обратно,
-                    //но я не понимаю, как это правильно организовать. Здесь просто набросок основной мысли
-
                     Console.WriteLine($"Принято от {handler.RemoteEndPoint}: {data}");
                     if (data.Contains("<Load>"))
                     {
                         quest.LoadFromFile(@"C:\Users\Asura\OneDrive\Desktop\вопросы.txt.txt");
+                        msg = Encoding.Unicode.GetBytes("OK");
+                        handler.Send(msg);
                         Console.WriteLine("Викторина загружена из сервера...");
                     }
+
                     if (data.Contains("<Sort>"))
                     {
                         quest.Sort(delegate (Questions q1, Questions q2)
                         {
                             return q1.Level.CompareTo(q2.Level);
                         });
+                        msg = Encoding.Unicode.GetBytes("OK");
+                        handler.Send(msg);
                     }
+
                     if (data.Contains("<DeliteQuestion>"))
                     {
+                        string term = data.Substring(16);
                         quest.DeliteQ(delegate (Questions q)
                         {
                             return q.ContainsTerm(term);
-                        });
+                        }, " ");
+                        msg = Encoding.Unicode.GetBytes("OK");
+                        handler.Send(msg);
                     }
+
                     if (data.Contains("<OutputQuestion>"))
                     {
-                        quest[currentIndex].OutputQ();
+                        string q = quest[currentIndex].OutputQ();
+                        msg = Encoding.Unicode.GetBytes(q);
+                        handler.Send(msg);
                     }
+
                     if (data.Contains("<CheckAnswer>"))
                     {
-                        quest[currentIndex].CheckA(answer);
+                        string message = data.Substring(13);
+                        string[] parts = message.Split('|');
+
+                        int index = int.Parse(parts[0]);
+                        string answer = parts[1];
+
+                        bool result = quest[index].CheckA(answer);
+
+                        handler.Send(Encoding.Unicode.GetBytes(result.ToString()));
+                        Console.WriteLine($"Ответ {(result ? "верный!" : "неверный :(")}" );
+                    }
+
+                    if (data.Contains("<Length>"))
+                    {
+                        handler.Send(Encoding.Unicode.GetBytes(quest.Length.ToString()));
+                    }
+
+                    if (data.Contains("<GetQuestion>"))
+                    {
+                        int i = int.Parse(data.Substring(13));
+                        Questions q = quest[i];
+
+                        string message;
+
+                        if (q is TMultiQuestion mq)
+                        {
+                            message = "M|" + mq.OutputQ() + "|" + string.Join(";", mq.Answers);
+                        }
+                        else
+                        {
+                            message = "S|" + q.OutputQ() + "|";
+                        }
+
+                        handler.Send(Encoding.Unicode.GetBytes(message));
                     }
                 }
             }
