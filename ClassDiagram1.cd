@@ -1,0 +1,64 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="quiz.Questions">
+    <Position X="3" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAgAAAAACAAAAAAAAAABAEEAAAABAAAAChAAAAA=</HashCode>
+      <FileName>CodeFile1.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="quiz.TQuestion">
+    <Position X="1" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>CodeFile1.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="quiz.TMultiQuestion">
+    <Position X="5" Y="1" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAAAAAAAAAEAAAAAAAAAABAAAAAQAAAAAAAAAA=</HashCode>
+      <FileName>CodeFile1.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="quiz.Quest">
+    <Position X="3" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAIAAAAAAAAAABAECAASAABAAAUAAAAACAAAAAAAEAA=</HashCode>
+      <FileName>CodeFile1.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsCollectionAssociation>
+      <Field Name="questions" />
+    </ShowAsCollectionAssociation>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="quiz.QuestionView">
+    <Position X="8.75" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAACAAABAA=</HashCode>
+      <FileName>CodeFile1.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="quiz.ClientQuest">
+    <Position X="7" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAACAASAABAAAEAAAAACAAABRAAEAA=</HashCode>
+      <FileName>CodeFile1.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Delegate Name="quiz.SortDelegate">
+    <Position X="10.5" Y="1.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAQAAAAA=</HashCode>
+      <FileName>CodeFile1.cs</FileName>
+    </TypeIdentifier>
+  </Delegate>
+  <Delegate Name="quiz.FilterDelegate">
+    <Position X="10.5" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAA=</HashCode>
+      <FileName>CodeFile1.cs</FileName>
+    </TypeIdentifier>
+  </Delegate>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

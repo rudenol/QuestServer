@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using hw2_3;
+using quiz;
 using System.Net.Sockets;
 using System.Net;
 using System.Threading;
@@ -15,9 +15,11 @@ namespace QuestServer
         static Quest quest = new Quest();
         static void Main(string[] args)
         {
+            quest.LoadFromFile(@"C:\Users\Asura\OneDrive\Desktop\вопросы.txt.txt");
             Socket server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             IPEndPoint localEndPoint = new IPEndPoint(IPAddress.Any, 8080);
-            quest.LoadFromFile(@"C:\Users\Asura\OneDrive\Desktop\вопросы.txt.txt");
+            var HTTPserver = new HTTPserver(quest);//Создаем HTTP сервер передаем группу
+            Task httpres = HTTPserver.Run(); // Запускаем сервер HTTP и продолжаем работу
             try
             {
                 server.Bind(localEndPoint);

@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using System.Net;
 using System.Net.Sockets;
 
-namespace hw2_3
+namespace quiz
 {
     // Делегат для фильтрации вопросов (для удаления)
     public delegate bool FilterDelegate(Questions q);
@@ -144,7 +144,7 @@ namespace hw2_3
             questions.Add(q);
         }
 
-        virtual public void DeliteQ(FilterDelegate del, string term)
+        virtual public void DeliteQ(FilterDelegate del, string term = "")
         {
             questions.RemoveAll(q => del(q));
         }
